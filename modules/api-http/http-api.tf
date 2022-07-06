@@ -33,9 +33,9 @@ resource "aws_apigatewayv2_integration" "aws_proxy_integration" {
 }
 
 resource "aws_apigatewayv2_route" "get_root" {
-  api_id             = aws_apigatewayv2_api.kempy-http-api.id
-  route_key          = "GET /"
-  target             = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
+  api_id    = aws_apigatewayv2_api.kempy-http-api.id
+  route_key = "GET /"
+  target    = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "get_iam" {
@@ -66,4 +66,10 @@ resource "aws_apigatewayv2_route" "get_jwt" {
   authorization_type = "JWT"
 }
 
+resource "aws_ssm_parameter" "domain" {
+  name     = "/kempy/api/endpoint"
+  type     = "String"
+  value    = aws_apigatewayv2_api.kempy-http-api.api_endpoint
+  provider = aws.region
+}
 

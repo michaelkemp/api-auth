@@ -1,17 +1,24 @@
 
 module "api-http-oregon" {
-  source               = "../../modules/api-http"
+  source = "../../modules/api-http"
   providers = {
     aws.region = aws.us-west-2
   }
 }
 
-module "user-oregon" {
-  source               = "../../modules/user"
+module "lambda-jwt-oregon" {
+  source = "../../modules/lambda-jwt"
   providers = {
     aws.region = aws.us-west-2
   }
 }
+
+# module "user-oregon" {
+#   source = "../../modules/user"
+#   providers = {
+#     aws.region = aws.us-west-2
+#   }
+# }
 
 ## IAM Auth - AWS IAM v4 
 ## Key ID: SSM /kempy/user/id

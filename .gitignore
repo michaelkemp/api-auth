@@ -32,4 +32,5 @@ override.tf.json
 .terraform.lock.hcl
 
 awslogin.json
+env.sh
 
