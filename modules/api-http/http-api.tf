@@ -37,3 +37,33 @@ resource "aws_apigatewayv2_route" "get_root" {
   route_key          = "GET /"
   target             = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
 }
+
+resource "aws_apigatewayv2_route" "get_iam" {
+  api_id             = aws_apigatewayv2_api.kempy-http-api.id
+  route_key          = "GET /iam"
+  target             = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
+  authorization_type = "AWS_IAM"
+}
+
+
+resource "aws_apigatewayv2_authorizer" "auth0" {
+  api_id           = aws_apigatewayv2_api.kempy-http-api.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "kempy-auth0"
+
+  jwt_configuration {
+    audience = ["https://auth0-jwt-authorizer"]
+    issuer   = "https://dev-74vf6lqe.us.auth0.com/"
+  }
+}
+
+resource "aws_apigatewayv2_route" "get_jwt" {
+  api_id             = aws_apigatewayv2_api.kempy-http-api.id
+  route_key          = "GET /jwt"
+  target             = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.auth0.id
+  authorization_type = "JWT"
+}
+
+
