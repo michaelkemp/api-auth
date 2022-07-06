@@ -1,3 +1,16 @@
+
+# env.sh
+#   #!/bin/sh
+#   cat <<EOF
+#   {
+#     "domain":        "xxxx.us.auth0.com",
+#     "client_id":     "xxxx",
+#     "client_secret": "xxxx",
+#     "audience":      "https://auth0-jwt-authorizer",
+#     "grant_type":    "client_credentials"
+#   }
+#   EOF
+
 data "external" "env" {
   program = ["${path.module}/env.sh"]
 }

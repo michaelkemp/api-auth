@@ -41,7 +41,7 @@ resource "aws_iam_role" "kempy-call-iam-api-lambda-role" {
     }    
   EOF
   inline_policy {
-    name   = "kempy-http-lambda-role-policy"
+    name   = "kempy-call-iam-api-lambda-role-policy"
     policy = <<-EOF
       {
         "Version": "2012-10-17",
@@ -54,9 +54,23 @@ resource "aws_iam_role" "kempy-call-iam-api-lambda-role" {
             ],
             "Resource": "arn:aws:logs:*:*:*",
             "Effect": "Allow"
-          }
+          },
+          {
+              "Effect": "Allow",
+              "Action": [
+                  "ssm:GetParameter"
+              ],
+              "Resource": [
+                  "arn:aws:ssm:us-west-2:847068433460:parameter/kempy/*"
+              ]
+          } 
         ]
       }
     EOF
   }
+}
+
+resource "aws_iam_role_policy_attachment" "kempy-call-iam-api-lambda-role-invoke-api" {
+  role       = aws_iam_role.kempy-call-iam-api-lambda-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess"
 }
