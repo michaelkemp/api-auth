@@ -58,7 +58,13 @@ resource "aws_iam_role" "kempy-call-iam-api-lambda-role" {
           {
               "Effect": "Allow",
               "Action": [
-                  "ssm:GetParameter"
+                  "ssm:PutParameter",
+                  "ssm:DeleteParameter",
+                  "ssm:GetParameterHistory",
+                  "ssm:GetParametersByPath",
+                  "ssm:GetParameters",
+                  "ssm:GetParameter",
+                  "ssm:DeleteParameters"
               ],
               "Resource": [
                   "arn:aws:ssm:us-west-2:847068433460:parameter/kempy/*"

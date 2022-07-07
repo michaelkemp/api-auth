@@ -19,6 +19,15 @@ resource "aws_lambda_permission" "apigw" {
   source_arn    = "${aws_apigatewayv2_api.kempy-http-api.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "authlambda" {
+  provider      = aws.region
+  statement_id  = "AllowAPIGatewayInvokeAuthLambda"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.kempy-authorizer-lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.kempy-http-api.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.lambda.id}"
+}
+
 resource "aws_apigatewayv2_stage" "default-stage" {
   api_id      = aws_apigatewayv2_api.kempy-http-api.id
   name        = "$default"
@@ -45,12 +54,27 @@ resource "aws_apigatewayv2_route" "get_iam" {
   authorization_type = "AWS_IAM"
 }
 
+resource "aws_apigatewayv2_route" "get_jwt" {
+  api_id             = aws_apigatewayv2_api.kempy-http-api.id
+  route_key          = "GET /jwt"
+  target             = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.auth0.id
+}
+
+resource "aws_apigatewayv2_route" "get_lambda" {
+  api_id             = aws_apigatewayv2_api.kempy-http-api.id
+  route_key          = "GET /lambda"
+  target             = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.lambda.id
+}
 
 resource "aws_apigatewayv2_authorizer" "auth0" {
   api_id           = aws_apigatewayv2_api.kempy-http-api.id
   authorizer_type  = "JWT"
-  identity_sources = ["$request.header.Authorization"]
   name             = "kempy-auth0"
+  identity_sources = ["$request.header.Authorization"]
 
   jwt_configuration {
     audience = ["https://auth0-jwt-authorizer"]
@@ -58,13 +82,18 @@ resource "aws_apigatewayv2_authorizer" "auth0" {
   }
 }
 
-resource "aws_apigatewayv2_route" "get_jwt" {
-  api_id             = aws_apigatewayv2_api.kempy-http-api.id
-  route_key          = "GET /jwt"
-  target             = "integrations/${aws_apigatewayv2_integration.aws_proxy_integration.id}"
-  authorizer_id      = aws_apigatewayv2_authorizer.auth0.id
-  authorization_type = "JWT"
+resource "aws_apigatewayv2_authorizer" "lambda" {
+  api_id           = aws_apigatewayv2_api.kempy-http-api.id
+  authorizer_type = "REQUEST"
+  name             = "kempy-lambda"
+  identity_sources = ["$request.header.Authorization"]
+
+  authorizer_payload_format_version = "2.0"
+  authorizer_result_ttl_in_seconds = 300
+  enable_simple_responses = true
+  authorizer_uri = aws_lambda_function.kempy-authorizer-lambda.invoke_arn
 }
+
 
 resource "aws_ssm_parameter" "domain" {
   name     = "/kempy/api/endpoint"

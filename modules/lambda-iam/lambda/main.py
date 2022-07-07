@@ -13,12 +13,18 @@ def signed_request(creds, method, url, data=None, params=None, headers=None):
     return r.content.decode('utf-8')
 
 def lambda_handler(event, context):
+
+    print(event)
+    print(context)
+
     session = boto3.Session()
     creds = session.get_credentials().get_frozen_credentials()
 
     endpoint = ssm.get_parameter(Name="/kempy/api/endpoint")["Parameter"]["Value"]
 
-    url = endpoint + "/iam"
+    ## url = endpoint + "/iam"
+    url = endpoint + "/lambda" ## Try Lambda Auth Handler
+
     print(url)
     headers = {'Content-Type': 'application/x-amz-json-1.1'}
     response = signed_request(creds = creds, method='GET', url=url, headers=headers)
