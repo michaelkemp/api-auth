@@ -89,7 +89,7 @@ resource "aws_apigatewayv2_authorizer" "lambda" {
   identity_sources = ["$request.header.Authorization"]
 
   authorizer_payload_format_version = "2.0"
-  authorizer_result_ttl_in_seconds = 300
+  authorizer_result_ttl_in_seconds = 60
   enable_simple_responses = true
   authorizer_uri = aws_lambda_function.kempy-authorizer-lambda.invoke_arn
 }

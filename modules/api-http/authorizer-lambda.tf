@@ -1,3 +1,17 @@
+data "archive_file" "jwt_verifier_zip" {
+  type        = "zip"
+  output_path = "${path.module}/py-jwt-verifier.zip"
+  source_dir  = "${path.module}/layers/py-jwt-verifier/"
+}
+
+resource "aws_lambda_layer_version" "jwt_verifier_layer" {
+  filename            = "${path.module}/py-jwt-verifier.zip"
+  layer_name          = "py-jwt-verifier"
+  source_code_hash    = data.archive_file.jwt_verifier_zip.output_base64sha256
+  compatible_runtimes = ["python3.7", "python3.8", "python3.9"]
+}
+
+
 data "archive_file" "authorizer_lambda_zip" {
   type             = "zip"
   source_dir       = "${path.module}/authorizer"
@@ -15,6 +29,9 @@ resource "aws_lambda_function" "kempy-authorizer-lambda" {
   handler          = "main.lambda_handler"
   runtime          = "python3.9"
   timeout          = "30"
+  layers = [
+    aws_lambda_layer_version.jwt_verifier_layer.arn
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "kempy-authorizer-lambda-log" {
