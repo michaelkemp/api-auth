@@ -1,26 +1,54 @@
 #!/usr/bin/env python3
 
-import jwt
-import base64
-import json
+# pip install py-jwt-verifier
+from py_jwt_verifier import PyJwtVerifier, PyJwtException
+import sys, os
 
-token = "xxxx"
+# Disable
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
 
-header, payload, signature = token.split(".")
+# Restore
+def enablePrint():
+    sys.stdout = sys.__stdout__
 
-header_padding = len(header) % 4
-header += "="* (4 - header_padding)
 
-payload_padding = len(payload) % 4
-payload += "="* (4 - payload_padding)
+jwt = ""
 
-headerData = json.loads(base64.b64decode(header).decode("utf-8"))
-payloadData = json.loads(base64.b64decode(payload).decode("utf-8"))
 
-print( json.dumps(headerData, indent=4) )
-print( json.dumps(payloadData, indent=4) )
-print(signature)
+validator = PyJwtVerifier(jwt, auto_verify=False)
 
-# jwt.decode(token, key='my_super_secret', algorithms=['HS256', ])
+try:
+    blockPrint()
+    payload = validator.verify(True)
+    enablePrint()
+    print(payload)
+except PyJwtException as e:
+    print(f"Exception caught. Error: {e}")
 
-# ## https://xxxxx.us.auth0.com/.well-known/jwks.json
+
+
+# import jwt
+# import base64
+# import json
+
+# token = "xxxx"
+
+# header, payload, signature = token.split(".")
+
+# header_padding = len(header) % 4
+# header += "="* (4 - header_padding)
+
+# payload_padding = len(payload) % 4
+# payload += "="* (4 - payload_padding)
+
+# headerData = json.loads(base64.b64decode(header).decode("utf-8"))
+# payloadData = json.loads(base64.b64decode(payload).decode("utf-8"))
+
+# print( json.dumps(headerData, indent=4) )
+# print( json.dumps(payloadData, indent=4) )
+# print(signature)
+
+# # jwt.decode(token, key='my_super_secret', algorithms=['HS256', ])
+
+# # ## https://xxxxx.us.auth0.com/.well-known/jwks.json
